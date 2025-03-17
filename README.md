@@ -1,1 +1,1 @@
-# Studyp-Planner-WEB
+This is a web program that i wrote in my free time with the purpose of teaching myself the fundementals of programming in react, css, html and javascript. The program is meant to help me with organizing my study sessions in a way that is backed by multiple science articles.In short, it offers multiple ways of structuring your sof structuring your study - break intervals in such a way that maximizes efficiency.
