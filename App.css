@@ -5,8 +5,13 @@ body{
     justify-content: center;
 }
 
-header{
+.App{
   align-items: center;
+}
+
+.clock{
+  text-align: center;
+  font-size: 55px;
 }
 .creating{
   align-items: center;

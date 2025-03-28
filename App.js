@@ -1,5 +1,5 @@
 import './App.css';
-import { useState } from 'react';
+import { useState, useEffect, useRef} from 'react';
 
 const Header = () => <h1>Study tracking for students</h1>;
 
@@ -16,40 +16,79 @@ const types = [
   { title: "30/5 Cycle", work: 30, break: 5, repeat: 2, description: description(30, 5) }
 ];
 
-const clock = "00-00-00"
-
 function App() {
-
-  // function updateClock(){
-  //   const now=new Date;
-  //   const hours=now.getHours;
-  //   const minutes=now.getMinutes;
-  //   const seconds=now.getSeconds;
-
-  //   {clock= hours + minutes + seconds;}
-  // }
-
-  // updateClock();
-  // setInterval(updateClock(), 1000)
-
   const [selectedOption, setSelectedOption] = useState("");
+  const [selectedMethod, setSelectedMethod] = useState(null);
+  const [clock, setClock] = useState("00:00:00");
+  const [timer, setTimer] = useState("00:00");
+  const timerRef = useRef(timer);
+
+  useEffect(() => {
+    timerRef.current = timer;
+  }, [timer]);
+
+  function updateClock() {
+    const now = new Date();
+    const hours = now.getHours();
+    const minutes = now.getMinutes();
+    const seconds = now.getSeconds();
+    setClock(`${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`);
+  }
+
+  function updateTimer() {
+    const [minutesNew, secondsNew] = timerRef.current.split(':').map(Number);
+    let minutes = minutesNew;
+    let seconds = secondsNew;
+
+    if (seconds !== 0) {
+      seconds -= 1;
+    } else if (seconds === 0) {
+      if (minutes > 0) {
+        minutes -= 1;
+        seconds = 59;
+      } else if (minutes === 0) {
+        setTimer('Times up, you finished your study session, you can take a break now.');
+        return;
+      }
+    }
+
+    setTimer(`${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`);
+  }
+
+  useEffect(() => {
+    const interval = setInterval(updateClock, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (selectedOption && selectedMethod) {
+      const minutes = selectedMethod.work;
+      setTimer(`${String(minutes).padStart(2, '0')}:00`);
+      timerRef.current = `${String(minutes).padStart(2, '0')}:00`; // Initialize the ref value
+      const interval2 = setInterval(updateTimer, 1000);
+      return () => clearInterval(interval2);
+    }
+  }, [selectedOption, selectedMethod]);
 
   const handleChange = (event) => {
-    setSelectedOption(event.target.value);
+    const selected = event.target.value;
+    setSelectedOption(selected);
+    const method = findType(selected);
+    setSelectedMethod(method);
+    if (method) {
+      setTimer(`${String(method.work).padStart(2, '0')}:00`);
+    }
   };
 
   function findType(selected) {
     return types.find(type => type.title === selected);
   }
 
-  const selectedMethod = findType(selectedOption); 
-
   return (
     <div className="App">
-      <header>
-        <Header />
-      </header>
       <main>
+        <Header />
+        <h1 className="clock">{clock}</h1>
         <section className="creating">
           <p>Please enter a study session and choose a method:</p>
           <label>Choose an option:</label>
@@ -63,12 +102,13 @@ function App() {
             <option value="30/5 Cycle">30/5 Cycle</option>
           </select>
         </section>
-        <br/>
+        <br />
         {selectedOption && selectedMethod && (
           <section className="selected">
             <h2 className="header">The used method: {selectedMethod.title}</h2>
             <p>Please put away your phone and anything that could take your attention</p>
             <p>Description: {selectedMethod.description}</p>
+            <p>{timer}</p>
           </section>
         )}
       </main>
